@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8416481852538386039
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7980684318044151936}
+  - component: {fileID: 7561809260903461727}
+  m_Layer: 0
+  m_Name: UIControl
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7980684318044151936
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8416481852538386039}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 213.2403, y: 91.859055, z: -94.5625}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7561809260903461727
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8416481852538386039}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81d0e019e93076c44988097b3f409a01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ability1: {fileID: 3244072224043842784, guid: 71dccba66b93d6c4eb7a4b31d6949e68,
+    type: 3}
+  ability2: {fileID: 9055168977164770238, guid: 60506c66ae55e2b4284f730bd36aa9a8,
+    type: 3}
+  ability3: {fileID: 6425377508824439588, guid: 44b38cf9501b4d54590137709e96e815,
+    type: 3}
+  ability1c: {r: 0.7264151, g: 0, b: 0, a: 0}
+  ability2c: {r: 0.7735849, g: 0.45085075, b: 0, a: 0}
+  ability3c: {r: 0.0016278613, g: 0.6509434, b: 0, a: 0}
