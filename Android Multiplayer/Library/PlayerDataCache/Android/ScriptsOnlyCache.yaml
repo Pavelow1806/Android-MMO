@@ -6,7 +6,9 @@ ScriptsOnlyBuild:
     - DigitalRuby.PyroParticles.FireLightScript
     - DigitalRuby.PyroParticles.FireProjectileScript
     - EGA_Laser
+    - ParticlePlay
     - Player
+    - TeleportCollider
     - UIController
     - bl_Joystick
     UnityEditor.Graphs.dll:
@@ -19,6 +21,7 @@ ScriptsOnlyBuild:
     - UnityEditor.TestTools.TestRunner.TestListCacheData
     UnityEngine.UI.dll:
     - UnityEngine.EventSystems.EventSystem
+    - UnityEngine.EventSystems.EventTrigger
     - UnityEngine.EventSystems.StandaloneInputModule
     - UnityEngine.UI.Button
     - UnityEngine.UI.CanvasScaler
@@ -29,7 +32,7 @@ ScriptsOnlyBuild:
     - UnityEngine.UI.Text
     - UnityEngine.UI.Toggle
   sceneClasses:
-    Assets/Scenes/SampleScene.unity:
+    Assets/Scenes/Arena.unity:
     - Class: 1
       Script: {instanceID: 0}
     - Class: 4
@@ -83,6 +86,8 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 9440}
     - Class: 114
+      Script: {instanceID: 9442}
+    - Class: 114
       Script: {instanceID: 9446}
     - Class: 114
       Script: {instanceID: 9454}
@@ -112,6 +117,10 @@ ScriptsOnlyBuild:
       Script: {instanceID: 10204}
     - Class: 114
       Script: {instanceID: 10752}
+    - Class: 114
+      Script: {instanceID: 75826}
+    - Class: 114
+      Script: {instanceID: 140512}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 120
@@ -191,7 +200,7 @@ ScriptsOnlyBuild:
     className: NavMeshLink
   - hash:
       serializedVersion: 2
-      Hash: 4ca353049aa210fa8a3fc13832d5e282
+      Hash: ac2aaf45da5d99231c1490169fabf0b9
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: Player
@@ -797,7 +806,7 @@ ScriptsOnlyBuild:
     className: EGA_Laser
   - hash:
       serializedVersion: 2
-      Hash: d7293e507858eb34c2a20eec113fb62f
+      Hash: 07cbc372cc997593078497f8f06683f9
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: UIController
@@ -987,8 +996,32 @@ ScriptsOnlyBuild:
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
     className: PlayableTrack
+  - hash:
+      serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: TeleportCollider
+  - hash:
+      serializedVersion: 2
+      Hash: 1752ebc61eba34c26abaa58fe75075e3
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: GameManager
+  - hash:
+      serializedVersion: 2
+      Hash: f4edb8e98735501349506a15a3fa9baa
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: SelfDestruct
+  - hash:
+      serializedVersion: 2
+      Hash: 28576d1d8321105ae5072c731764f7ec
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: ParticlePlay
   platform: 13
   scenePathNames:
-  - Assets/Scenes/SampleScene.unity
-  playerPath: C:/Users/james/Documents/GitHub/Android-MMO/Android Multiplayer/Android
-    Multiplayer Test.apk
+  - Assets/Scenes/Arena.unity
+  playerPath: C:/Users/james/Documents/GitHub/Android-MMO/Android Multiplayer/Lane
+    Defence.apk

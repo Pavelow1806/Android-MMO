@@ -423,6 +423,12 @@ RectTransform:
   m_AnchoredPosition: {x: -5, y: 0}
   m_SizeDelta: {x: -20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &195406885 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8741381534858900699, guid: cd8d4796252581a49b8738b0a324742c,
+    type: 3}
+  m_PrefabInstance: {fileID: 3475566556247492314}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &249297110
 GameObject:
   m_ObjectHideFlags: 0
@@ -5415,6 +5421,12 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: 100
+--- !u!1 &2109671068 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6081414526445622979, guid: cd8d4796252581a49b8738b0a324742c,
+    type: 3}
+  m_PrefabInstance: {fileID: 3475566556247492314}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2114221622
 GameObject:
   m_ObjectHideFlags: 0
@@ -6052,7 +6064,7 @@ PrefabInstance:
         type: 3}
       propertyPath: Follow_Object
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 2109671068}
     - target: {fileID: 1695214716334126606, guid: cd8d4796252581a49b8738b0a324742c,
         type: 3}
       propertyPath: LaserSpecialIncrease
@@ -6063,6 +6075,11 @@ PrefabInstance:
       propertyPath: LaserDrainSpeed
       value: 45
       objectReference: {fileID: 0}
+    - target: {fileID: 1695214716334126606, guid: cd8d4796252581a49b8738b0a324742c,
+        type: 3}
+      propertyPath: Ability_Follow_Object
+      value: 
+      objectReference: {fileID: 195406885}
     - target: {fileID: 7830372134229520006, guid: cd8d4796252581a49b8738b0a324742c,
         type: 3}
       propertyPath: m_LocalScale.x

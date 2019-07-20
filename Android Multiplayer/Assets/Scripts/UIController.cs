@@ -22,6 +22,13 @@ public class UIController : MonoBehaviour
     public Image ability3;
     [HideInInspector]
     public Image ability3icon;
+
+    [Header("Teleport")]
+    public Image teleport;
+    public float Teleport_Speed = 15.0f;
+    public Vector3 TempVelocity;
+    private Player player;
+
     public GameObject Highlight;
     // Special
     public float SpecialProgress = 0.0f;
@@ -53,6 +60,9 @@ public class UIController : MonoBehaviour
         public Slider SpeedSlider;
         // Ability Auto-Fire
         public Toggle AutoFire;
+        // Camera Distance
+        public Text CameraNumber;
+        public Slider CameraSlider;
 
     public SelectedAbility Ability = SelectedAbility.Fire;
 
@@ -67,6 +77,7 @@ public class UIController : MonoBehaviour
             ability2icon = ability2.transform.GetChild(0).GetChild(0).GetComponent<Image>();
         if (ability3 != null)
             ability3icon = ability3.transform.GetChild(0).GetChild(0).GetComponent<Image>();
+        player = GameObject.Find("Player").GetComponent<Player>();
         // Settings PlayerPrefs
         //      Volume
         if (PlayerPrefs.HasKey("MasterVolume"))
@@ -90,6 +101,12 @@ public class UIController : MonoBehaviour
             AutoFire.isOn = (PlayerPrefs.GetInt("AutoFire") == 1 ? true : false);
         else
             PlayerPrefs.SetInt("AutoFire", 0);
+        if (PlayerPrefs.HasKey("CameraDistance"))
+            CameraSlider.value = PlayerPrefs.GetFloat("CameraDistance");
+        else
+            PlayerPrefs.SetFloat("CameraDistance", 2.0f);
+
+        Camera.main.orthographicSize = (5.0f * PlayerPrefs.GetFloat("CameraDistance")) + 5.0f;
     }
 
     private void Update()
@@ -114,6 +131,36 @@ public class UIController : MonoBehaviour
     {
         if (SelectedAbility.Poison != Ability) ResetSpecial();
         SetAbility(SelectedAbility.Poison);
+    }
+    public void Teleport(bool Down)
+    {
+        if (DateTime.Now > player.TeleportReset)
+        {
+            if (Down)
+            {
+                player.Teleport_Target.SetActive(true);
+            }
+            else
+            {
+                player.Teleporting = true;
+                player.TeleportStart.PlayAll();
+                player.TeleportReset = DateTime.Now.AddSeconds(player.TeleportCooldown);
+                player.Teleport_Target.SetActive(false);
+                TempVelocity = player.RB.velocity;
+                player.RB.velocity = new Vector2(0, 0);
+                player.RB.constraints = RigidbodyConstraints2D.FreezeRotation;
+                StartCoroutine(TeleportAfter(0.5f));
+            }
+        }
+    }
+    private IEnumerator TeleportAfter(float time)
+    {
+        yield return new WaitForSeconds(time);
+        player.CameraCatchup = 5.0f;
+        player.transform.position = player.Teleport_Target.transform.position;
+        player.RB.velocity = TempVelocity;
+        player.RB.constraints = RigidbodyConstraints2D.None;
+        player.Teleporting = false;
     }
     private void SetAbility(SelectedAbility selectedAbility)
     {
@@ -172,6 +219,12 @@ public class UIController : MonoBehaviour
             MasterVolumeSlider.value = slider.value;
         }
         SFXVolumeNumber.text = ((int)(slider.value * 100)).ToString();
+    }
+    public void CameraDistanceChange(Slider slider)
+    {
+        PlayerPrefs.SetFloat("CameraDistance", slider.value);
+        CameraNumber.text = ((int)(slider.value * 100)).ToString();
+        Camera.main.orthographicSize = (5.0f * slider.value) + 5.0f;
     }
     public bool IncreaseSpecial(float amount, bool DisableCatcup = false)
     {

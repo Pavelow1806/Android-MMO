@@ -17,7 +17,8 @@ public class Player : MonoBehaviour
     public bl_Joystick Movement;
     public bl_Joystick Ability;
     private Control control;
-    private Rigidbody2D RB;
+    public Rigidbody2D RB;
+    private CircleCollider2D CC;
 
     public GameObject Ability_Direction_Pivot;
     public GameObject Ability_Direction_Marker;
@@ -53,8 +54,22 @@ public class Player : MonoBehaviour
     [Header("Camera Follow")]
     public GameObject Follow_Object;
     public float Follow_Speed = 5.0f;
+    public float Ability_Follow_Speed = 5.0f;
     public Transform MainCamera;
     public Vector3 Follow_Target;
+
+    public GameObject Ability_Follow_Object;
+
+    [Header("Teleporting")]
+    public GameObject Teleport_Parent;
+    public GameObject Teleport_Target;
+    public bool Parent_Colliding = false;
+    public DateTime TeleportReset = default;
+    public float TeleportCooldown = 15.0f;
+    public float TeleportRemaining = 0.0f;
+    public ParticlePlay TeleportStart;
+    public float CameraCatchup = 1.0f;
+    public bool Teleporting = false;
 
     // Start is called before the first frame update
     void Start()
@@ -65,6 +80,7 @@ public class Player : MonoBehaviour
         RB = GetComponent<Rigidbody2D>();
         Ability.StickFree = true;
         MainCamera = Camera.main.transform;
+        CC = GetComponent<CircleCollider2D>();
     }
 
     // Update is called once per frame
@@ -77,20 +93,6 @@ public class Player : MonoBehaviour
         Horizontal = control.A_Horizontal;
         Vertical = control.A_Vertical;
         IsActive = control.StickFree;
-
-        if (Follow_Object != null)
-        {
-            if (control.M_StickFree)
-            {
-                Follow_Target = gameObject.transform.position;
-            }
-            else
-            {
-                Follow_Target = Follow_Object.transform.position;
-            }
-            Follow_Target = new Vector3(Follow_Target.x, Follow_Target.y, MainCamera.transform.position.z);
-            MainCamera.position = Vector3.MoveTowards(MainCamera.position, Follow_Target, Follow_Speed * Time.deltaTime);
-        }
 
         // Keep the ability directional marker on the players position
         Ability_Direction_Pivot.transform.position = transform.position;
@@ -117,12 +119,37 @@ public class Player : MonoBehaviour
         {
             UI.ability3icon.fillAmount = 1.0f;
         }
-
-        // Update player position based on new direction if the movement joystick is being used
-        if (control.Movement_Direction != Vector2.zero)
+        if (DateTime.Now < TeleportReset)
         {
-            transform.rotation = Quaternion.Euler(new Vector3(0.0f, 0.0f, control.Movement_Angle));
-            RB.AddForce(control.Movement_Direction * PlayerPrefs.GetFloat("Speed"));
+            // Get the remaining amount of seconds
+            TeleportRemaining = (float)(TeleportReset - DateTime.Now).TotalSeconds;
+            // Set the Filled icon to the percentage between the remaining time and the total cooldown time
+            UI.teleport.fillAmount = (TeleportCooldown - TeleportRemaining) / TeleportCooldown;
+        }
+        else
+        {
+            UI.teleport.fillAmount = 1.0f;
+        }
+
+        // Update the camera catchup rate
+        if (CameraCatchup > 1.0f)
+        {
+            CameraCatchup -= 1.0f * Time.deltaTime;
+        }
+        else
+        {
+            CameraCatchup = 1.0f;
+        }
+
+        // Only move or rotate if the player isn't teleporting
+        if (!Teleporting)
+        {
+            // Update player position based on new direction if the movement joystick is being used
+            if (control.Movement_Direction != Vector2.zero)
+            {
+                transform.rotation = Quaternion.Euler(new Vector3(0.0f, 0.0f, control.Movement_Angle));
+                RB.AddForce(control.Movement_Direction * PlayerPrefs.GetFloat("Speed"));
+            }
         }
 
         // Check if the player has activated the selected ability
@@ -217,6 +244,120 @@ public class Player : MonoBehaviour
             }
         }
     }
+
+    private void FixedUpdate()
+    {
+        #region Camera Follow
+        if (Follow_Object != null)
+        {
+            // Set the camera follow speeds to be equal to the players velocity magnitude in order to avoid the player getting ahead of the camera
+            Follow_Speed = (CameraCatchup > 1.0f) ? CameraCatchup + RB.velocity.magnitude : RB.velocity.magnitude;
+
+            // If following has been enabled then set the location to follow to be the player to begin with
+            Follow_Target = gameObject.transform.position;
+
+            if (Ability_Follow_Object == null) // If the ability follow object is null avoid using it
+            {
+                if (!control.M_StickFree)
+                {
+                    Follow_Target = Follow_Object.transform.position;
+                }
+            }
+            else // Otherwise take into consideration both sticks and both follow objects
+            {
+                if (!control.StickFree)
+                {
+                    // Add the default ability follow speed onto the follow speed variable if the ability control is being used
+                    Follow_Speed += Ability_Follow_Speed;
+                }
+                if (!control.M_StickFree && control.StickFree)      // If the movement stick is being used and the ability stick is free set the follow position to be the movement follow object
+                {
+                    Follow_Target = Follow_Object.transform.position;
+                }
+                else if (control.M_StickFree && !control.StickFree) // If the movement stick is free and the ability stick is being used set the follow position to be the ability follow object
+                {
+                    Follow_Target = Ability_Follow_Object.transform.position;
+                }
+                else if (!control.M_StickFree && !control.StickFree) // If both of the sticks are being used, get the centre point between both follow objects
+                {
+                    Follow_Target = Follow_Object.transform.position + (Ability_Follow_Object.transform.position - Follow_Object.transform.position) / 2;
+                }
+            }
+
+            // Set the z position to be that of the cameras to avoid the camera moving forward towards the objects
+            Follow_Target = new Vector3(Follow_Target.x, Follow_Target.y, MainCamera.transform.position.z);
+
+            // Update the camera position based on its current position, the follow target and the follow speed
+            MainCamera.position = Vector3.MoveTowards(MainCamera.position, Follow_Target, Follow_Speed * Time.deltaTime);
+        }
+        #endregion
+
+        #region Teleport Indicator Follow
+        // First check if teleport parent isn't colliding
+        if (!Parent_Colliding)
+        {
+            Teleport_Target.transform.position = Teleport_Parent.transform.position;
+        }
+        else
+        {
+            // Setup the raycasting
+            List<RaycastHit2D> hits = new List<RaycastHit2D>();
+            ContactFilter2D filter = new ContactFilter2D();
+            filter.layerMask = ~LayerMask.GetMask("Players");
+            filter.useLayerMask = true;
+            Vector2 Origin = new Vector2(transform.position.x, transform.position.y);
+            Vector2 Dest = new Vector2(Teleport_Parent.transform.position.x, Teleport_Parent.transform.position.y);
+            Vector2 Dir = (Origin - Dest).normalized;
+            Dest += (-Dir * CC.radius * transform.localScale * 2);
+            int count = 0;
+
+            // Raycast from the mid-point between the player and the parent to see if there is a collision point we can find
+            Vector2 MidPoint = Origin + (Dest - Origin) / 2;
+            count = Physics2D.Raycast(Origin, MidPoint - Origin, filter, hits, Vector2.Distance(MidPoint, Dest));
+            Debug.DrawRay(MidPoint, Dest - MidPoint);
+            if (count > 0)
+            {
+                Debug.Log("Detected hit from MidPoint with " + hits[0].transform.name);
+                Teleport_Target.transform.position = (hits[0].point + (Dir * CC.radius * transform.localScale * 2));
+            }
+            else
+            {
+                // The ray might be coming from inside, therefore check the mid-point between the current mid-point and destination
+                MidPoint = MidPoint + (Dest - MidPoint) / 2;
+                count = Physics2D.Raycast(Origin, MidPoint - Origin, filter, hits, Vector2.Distance(MidPoint, Dest));
+                Debug.DrawRay(MidPoint, Dest - MidPoint);
+                if (count > 0)
+                {
+                    Debug.Log("Detected hit from second MidPoint with " + hits[0].transform.name);
+                    Teleport_Target.transform.position = (hits[0].point + (Dir * CC.radius * transform.localScale * 2));
+                }
+                else
+                {
+                    // Use a raycast from the player position to the destination
+                    count = Physics2D.Raycast(Origin, Dest - Origin, filter, hits, Vector2.Distance(Dest, Origin));
+                    Debug.DrawRay(Origin, Dest - Origin);
+                    if (count > 0)
+                    {
+                        Debug.Log("Detected hit from player position with " + hits[0].transform.name);
+                        Teleport_Target.transform.position = (hits[0].point + (Dir * CC.radius * transform.localScale * 2));
+                    }
+                    else
+                    {
+                        // There were no collisions on any of the casts, therefore just use the parent position regardless
+                        Teleport_Target.transform.position = Teleport_Parent.transform.position;
+                    }
+                }
+            }
+        }
+        #endregion
+    }
+    //public void MoveToClosest(Vector2 pos, Collider2D c)
+    //{
+    //    Debug.Log("MvoeToClosest: " + c.name);
+    //    Debug.Log(Teleport_Target.transform.position + " " + Physics2D. .ClosestPoint(pos, c));
+    //    Teleport_Target.transform.position = Physics2D.ClosestPoint(pos, c);
+    //    Test.transform.position = Physics2D.ClosestPoint(pos, c);
+    //}
 
     public void TakeDamage(DamageType type)
     {
@@ -362,5 +503,32 @@ public class Control
                 IsDown = true;
             }
         }
+    }
+}
+
+public class Sort : IComparer<Hit>
+{
+    int IComparer<Hit>.Compare(Hit x, Hit y)
+    {
+        return x.CompareTo(y);
+    }
+}
+public class Hit
+{
+    public RaycastHit2D Hit_;
+    public float Distance;
+    public Hit(RaycastHit2D hit, float distance)
+    {
+        Hit_ = hit;
+        Distance = distance;
+    }
+    internal int CompareTo(Hit y)
+    {
+        if (Distance > y.Distance)
+            return 1;
+        else if (Distance < y.Distance)
+            return -1;
+        else
+            return 0;
     }
 }
