@@ -2,12 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-public enum DamageType
-{
-    PROJECTILE,
-    LASER,
-    POISON
-}
 
 public class Player : MonoBehaviour
 {
@@ -359,16 +353,16 @@ public class Player : MonoBehaviour
     //    Test.transform.position = Physics2D.ClosestPoint(pos, c);
     //}
 
-    public void TakeDamage(DamageType type)
+    public void TakeDamage(SpellType type)
     {
         switch (type)
         {
-            case DamageType.PROJECTILE:
+            case SpellType.Fire:
 
                 break;
-            case DamageType.LASER:
+            case SpellType.Arcane:
                 break;
-            case DamageType.POISON:
+            case SpellType.Poison:
                 break;
         }
     }
