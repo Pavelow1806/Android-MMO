@@ -41,13 +41,12 @@ public class MenuController : MonoBehaviour
     public Slider CameraSlider;
 
     [Header("Talents")]
-    public int RemainingPoints = 15;
-    public int FireTalentMax = 0;
-    public int ArcaneTalentMax = 0;
-    public int PoisonTalentMax = 0;
+    public SpellControl SC;
 
     private void Awake()
     {
+        if (SC == null) SC = GameObject.Find("SpellControl").GetComponent<SpellControl>();
+
         #region Settings Player Prefs
         //      Volume
         if (PlayerPrefs.HasKey("MasterVolume"))
@@ -76,6 +75,10 @@ public class MenuController : MonoBehaviour
         else
             PlayerPrefs.SetFloat("CameraDistance", 2.0f);
         #endregion
+    }
+    private void Start()
+    {
+        LoadTalents();
     }
 
     #region General
@@ -150,72 +153,36 @@ public class MenuController : MonoBehaviour
     public void ToggleTalent(Button button)
     {
         int row = Convert.ToInt32(button.name.Substring(6, 1));
-        if (row < 6)
+        int pos = 0;
+        if (row < 6) { pos = GetPos(button.name.Substring(7, 1)); }
+        TreeType type = GetType(button);
+        if (SC.ActivateTalent(type, row, pos))
         {
-            string pos = button.name.Substring(7, 1);
-        }
-        if (RemainingPoints > 0)
-        {
-            TreeType type = GetType(button);
-            switch (type)
-            {
-                case TreeType.Fire:
-                    if (FireTalentMax + 1 != row && FireTalentMax != row) // TBC
-                    {
-                        return;
-                    }
-                    if (button.transform.GetChild(0).GetChild(0).GetChild(0).GetComponent<SpriteParticleEmitter.UIParticleRenderer>().enabled)
-                    {
-                        --FireTalentMax;
-                        ++RemainingPoints;
-                    }
-                    else
-                    {
-                        ++FireTalentMax;
-                        --RemainingPoints;
-                    }
-                    break;
-                case TreeType.Arcane:
-                    if (ArcaneTalentMax + 1 != row)
-                    {
-                        return;
-                    }
-                    if (button.transform.GetChild(0).GetChild(0).GetChild(0).GetComponent<SpriteParticleEmitter.UIParticleRenderer>().enabled)
-                    {
-                        --ArcaneTalentMax;
-                        ++RemainingPoints;
-                    }
-                    else
-                    {
-                        ++ArcaneTalentMax;
-                        --RemainingPoints;
-                    }
-                    break;
-                case TreeType.Poison:
-                    if (PoisonTalentMax + 1 != row)
-                    {
-                        return;
-                    }
-                    if (button.transform.GetChild(0).GetChild(0).GetChild(0).GetComponent<SpriteParticleEmitter.UIParticleRenderer>().enabled)
-                    {
-                        --PoisonTalentMax;
-                        ++RemainingPoints;
-                    }
-                    else
-                    {
-                        ++PoisonTalentMax;
-                        --RemainingPoints;
-                    }
-                    break;
-                default:
-                    break;
-            }
             SpriteParticleEmitter.UIParticleRenderer ps;
             for (int i = 0; i < 3; i++)
             {
                 ps = button.transform.GetChild(0).GetChild(0).GetChild(i).GetComponent<SpriteParticleEmitter.UIParticleRenderer>();
                 ps.enabled = !ps.enabled;
             }
+        }
+        else
+        {
+            Debug.Log("Talent choice declined");
+        }
+    }
+    private int GetPos(string pos)
+    {
+        if (pos == "R")
+        {
+            return 2;
+        }
+        else if (pos == "L")
+        {
+            return 1;
+        }
+        else
+        {
+            return 0;
         }
     }
     public void CloseTalents()
@@ -236,6 +203,27 @@ public class MenuController : MonoBehaviour
                 return TreeType.Poison;
             default:
                 return TreeType.Fire;
+        }
+    }
+    private void LoadTalents()
+    {
+        var v = Enum.GetValues(typeof(TreeType));
+        foreach (var i in v)
+        {
+            Dictionary<int, Talent> t = SC.GetTalents((TreeType)i);
+            foreach (KeyValuePair<int, Talent> talent in t)
+            {
+                if (talent.Value.Selected != 0) ToggleTalent(GameObject.Find(((TreeType)i).ToString() + "Tree").transform.Find("Talent" + talent.Value.Tier + (talent.Key == 6 ? "" : (talent.Value.Selected == 1 ? "L" : "R"))).gameObject);
+            }
+        }
+    }
+    private void ToggleTalent(GameObject go)
+    {
+        SpriteParticleEmitter.UIParticleRenderer ps;
+        for (int i = 0; i < 3; i++)
+        {
+            ps = go.transform.GetChild(0).GetChild(0).GetChild(i).GetComponent<SpriteParticleEmitter.UIParticleRenderer>();
+            ps.enabled = !ps.enabled;
         }
     }
     #endregion

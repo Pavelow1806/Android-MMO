@@ -11,13 +11,13 @@ public class DamageCollider : MonoBehaviour
         switch (other.tag)
         {
             case "Projectile":
-                player.TakeDamage(DamageType.PROJECTILE);
+                player.TakeDamage(SpellType.Fire);
                 break;
             case "Laser":
-                player.TakeDamage(DamageType.LASER);
+                player.TakeDamage(SpellType.Arcane);
                 break;
             case "Poison":
-                player.TakeDamage(DamageType.POISON);
+                player.TakeDamage(SpellType.Poison);
                 break;
             default:
                 break;
